@@ -22,6 +22,7 @@ class MainFrame : public wxFrame
     private:
         wxButton *m_rename, *m_help;
         wxTextCtrl *m_output, *m_list, *m_start;
+        wxCheckBox *m_extension, *m_clear;
 
         // events
         void OnBtnRename(wxCommandEvent &event);

@@ -40,10 +40,11 @@ wxArrayString separatePath(const wxString& s)
     wxArrayString result;
     result.Add(wxString());
     result.Add(wxString());
+    result.Add(wxString());
     int pos = -1;
 
     for(int i = 0; i < s.size(); ++i)
-        if(s[i] == '\\') pos = i;
+        if(s[i] == (wxChar)'\\') pos = i;
 
     if(pos == -1)
     {
@@ -53,6 +54,17 @@ wxArrayString separatePath(const wxString& s)
     {
         result[0] = s.SubString(0, pos);
         result[1] = s.SubString(pos+1, s.size());
+    }
+
+    // extension
+    pos = -1;
+    for(int i = 0; i < result[1].size(); ++i)
+        if(result[1][i] == (wxChar)'.') pos = i;
+
+    if(pos != -1)
+    {
+        result[2] = result[1].SubString(pos, s.size());
+        result[1] = result[1].SubString(0, pos-1);
     }
     return result;
 }
@@ -127,6 +139,10 @@ MainFrame::MainFrame(const wxString& title) : wxFrame(NULL, wxID_ANY, title, wxD
     hbox2->Add(new wxStaticText(panel, -1, _T("Start from number :")));
     m_start = new wxTextCtrl(panel, -1, _T("1"));
     hbox2->Add(m_start);
+    m_extension = new wxCheckBox(panel, -1, _T("keep extension"));
+    hbox2->Add(m_extension);
+    m_clear = new wxCheckBox(panel, -1, _T("clear list after renaming"));
+    hbox2->Add(m_clear);
 
     hbox3->Add(new wxStaticLine(panel, -1, wxPoint(0, 5), wxSize(1, 1)), 1);
 
@@ -204,17 +220,28 @@ void MainFrame::OnBtnRename(wxCommandEvent &event)
         }
     }
 
+    if(files.GetCount() == 0) return;
+
+    bool hasExt = m_extension->GetValue();
+    wxArrayString exts;
+
     // security
     for(size_t i = 0; i < files.Count(); ++i)
     {
         wxArrayString f = separatePath(files[i]);
-        wxString newname = replace(_T("renamer_temporary_file_security_*"), '*', getNumber(i+lstart, files.Count()+lstart));
-        if(!wxRenameFile(f[0] + f[1], f[0] + newname, true))
+        wxString newname = replace(_T("renamer_temporary_file_security_*"), '*', getNumber(i+lstart, files.Count()+lstart-1));
+
+        exts.Add(_T(""));
+        if(!wxRenameFile(f[0] + f[1] + f[2], f[0] + newname, true))
         {
             joker++;
             files[i].Clear();
         }
-        else files[i] = f[0] + newname;
+        else
+        {
+            files[i] = f[0] + newname;
+            if(hasExt) exts[i] = f[2];
+        }
     }
 
     for(size_t i = 0; i < files.Count(); ++i)
@@ -222,12 +249,14 @@ void MainFrame::OnBtnRename(wxCommandEvent &event)
         if(!files[i].IsEmpty())
         {
             wxArrayString f = separatePath(files[i]);
-            wxString newname = replace(out, '*', getNumber(i+lstart, files.Count()+lstart));
-            if(!wxRenameFile(f[0] + f[1], f[0] + newname, true)) joker++;
+            wxString newname = replace(out, '*', getNumber(i+lstart, files.Count()+lstart-1));
+            if(!wxRenameFile(f[0] + f[1], f[0] + newname + exts[i], true)) joker++;
         }
     }
     delete log;
     wxMessageBox(_T("Done\n") + wxString::Format(wxT("%i"),files.Count()) + _T(" file(s)\n") + wxString::Format(wxT("%i"),joker) + _T(" error(s)\n"));
+
+    if(m_clear->GetValue()) m_list->Clear();
 }
 
 void MainFrame::OnBtnHelp(wxCommandEvent &event)
