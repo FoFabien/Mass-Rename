@@ -261,5 +261,5 @@ void MainFrame::OnBtnRename(wxCommandEvent &event)
 
 void MainFrame::OnBtnHelp(wxCommandEvent &event)
 {
-    wxMessageBox(_T("Usage\n- Add your file in the order you want them renamed.\n\n- Set the output name. It MUST contain the '*' character.\nExample :\t\"example*.txt\"\nResult :\t\"example1.txt\"\n\t\"example2.txt\"\n\tetc...\n\n- Press the rename button"), _T("Help"), wxICON_QUESTION);
+    wxMessageBox(_T("Usage\n- Add your files in the order you want them renamed.\nYou can use the full path or relative path.\nDrag and drop also works.\n\n- Set the output name. It MUST contain the '*' character.\nExample :\t\"example*.txt\"\nResult :\t\"example1.txt\"\n\t\"example2.txt\"\n\tetc...\n\n- Press the rename button"), _T("Help"), wxICON_QUESTION);
 }
